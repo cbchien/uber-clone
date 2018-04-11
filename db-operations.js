@@ -72,8 +72,27 @@ function updateRequest(db, requestId, copId, status, callback) {
         }
     });
 }
-exports.updateRequest = updateRequest;
 
+function fetchRequests(db, callback) {
+    var collection = db.collection('requestsData');
+    //Using stream to process potentially huge records
+    var stream = collection.find({}, {
+        requestTime: true,
+        status: true,
+        location: true
+    }).stream();
+    var requestsData = [];
+    stream.on('data', function(request) {
+        requestsData.push(request);
+    });
+    //Runs after results are fetched
+    stream.on('end', function() {
+        callback(requestsData);
+    });
+}
+
+exports.fetchRequests = fetchRequests;
+exports.updateRequest = updateRequest;
 exports.saveRequest = saveRequest;
 exports.fetchCopDetails = fetchCopDetails;
 exports.fetchNearestCops = fetchNearestCops;
